@@ -1,10 +1,19 @@
 ﻿package com.eclecticdesignstudio.motion {
 	
 	
+	import com.eclecticdesignstudio.motion.actuators.ColorTransformActuator;
+	import com.eclecticdesignstudio.motion.actuators.FilterActuator;
+	import com.eclecticdesignstudio.motion.actuators.GenericActuator;
+	import com.eclecticdesignstudio.motion.actuators.MotionInternal;
+	import com.eclecticdesignstudio.motion.actuators.MotionPathActuator;
+	import com.eclecticdesignstudio.motion.actuators.SimpleActuator;
+	import com.eclecticdesignstudio.motion.easing.Expo;
+	import com.eclecticdesignstudio.motion.easing.IEasing;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
-	import flash.utils.getQualifiedClassName;
-	import com.eclecticdesignstudio.motion.easing.IEasing;
+	
+	
+	use namespace MotionInternal;
 	
 	
 	/**
@@ -15,6 +24,7 @@
 		
 		
 		public static var defaultActuator:Class = SimpleActuator;
+		public static var defaultEase:IEasing = Expo.easeOut;
 		private static var targetLibraries:Dictionary = new Dictionary (true);
 		
 		
@@ -24,74 +34,35 @@
 		 * @param	target		The object to copy to
 		 * @param	properties		The object to copy from
 		 * @param	customActuator		A custom actuator to use instead of the default (Optional)
+		 * @return		The current actuator instance, which can be used to apply properties like onComplete or onChange handlers
 		 */
-		public static function apply (target:Object, properties:Object, customActuator:Class = null):void {
+		public static function apply (target:Object, properties:Object, customActuator:Class = null):GenericActuator {
 			
 			stop (target, properties);
 			
 			var actuateClass:Class = customActuator || defaultActuator;
-			var actuator:GenericActuator = new actuateClass (target, 0, properties, null);
+			var actuator:GenericActuator = new actuateClass (target, 0, properties);
 			
-			actuator.apply ();
+			actuator.MotionInternal::apply ();
+			
+			return actuator;
 			
 		}
 		
 		
-		private static function getInitProperties (target:Object, properties:Object, duration:Number, tweenProperties:Object):Object {
+		/**
+		 * Creates a new BitmapFilter tween 
+		 * @param	target		The object to tween
+		 * @param	duration		The length of the tween in seconds
+		 * @param	properties		The end values to tween the filter to
+		 * @param	index		The index of the filter within the target's filter array (Default is 0)
+		 * @param	overwrite		Sets whether previous tweens for the same target will be overwritten (Default is true)
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 */
+		public static function filter (target:Object, duration:Number, properties:Object, index:uint = 0, overwrite:Boolean = true):GenericActuator {
 			
-			var library:Dictionary = getLibrary (target);
-			var initProperties:Object;
-			var startTime:Number = duration;
-			
-			if (tweenProperties && "delay" in tweenProperties) {
-				
-				startTime += tweenProperties.delay;
-				
-			}
-			
-			for (var propertyName:String in properties) {
-				
-				var lastMatch:Object;
-				var lastMatchEndTime:Number = 0;
-				
-				for each (var actuator:GenericActuator in library) {
-					
-					if (propertyName in actuator.properties) {
-						
-						var endTime:Number = actuator.duration;
-						
-						if (actuator.tweenProperties && "delay" in actuator.tweenProperties) {
-							
-							endTime += actuator.tweenProperties.delay;
-							
-						}
-						
-						if (endTime >= lastMatchEndTime && endTime <= startTime) {
-							
-							lastMatch = actuator.properties[propertyName];
-							lastMatchEndTime = endTime;
-							
-						}
-						
-					}
-					
-				}
-				
-				if (lastMatch != null) {
-					
-					if (initProperties == null) {
-						
-						initProperties = new Object ();
-						
-					}
-					
-					initProperties[propertyName] = lastMatch;
-					
-				}
-				
-			}
-			
-			return initProperties;
+			properties.index = index;
+			return tween (target, duration, properties, overwrite, FilterActuator);
 			
 		}
 		
@@ -105,6 +76,21 @@
 			}
 			
 			return targetLibraries[target];
+			
+		}
+		
+		
+		/**
+		 * Creates a new MotionPath tween
+		 * @param	target		The object to tween
+		 * @param	duration		The length of the tween in seconds
+		 * @param	properties		An object containing a motion path for each property you wish to tween
+		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 */
+		public static function path (target:Object, duration:Number, properties:Object, overwrite:Boolean = true):GenericActuator {
+			
+			return tween (target, duration, properties, overwrite, MotionPathActuator);
 			
 		}
 		
@@ -126,7 +112,7 @@
 					
 					for each (actuator in library) {
 						
-						actuator.pause ();
+						actuator.MotionInternal::pause ();
 						
 					}
 					
@@ -138,33 +124,13 @@
 					
 					for each (actuator in library) {
 						
-						actuator.pause ();
+						actuator.MotionInternal::pause ();
 						
 					}
 					
 				}
 				
 			}
-			
-		}
-		
-		
-		private static function register (actuator:GenericActuator, overwrite:Boolean = true):void {
-			
-			var library:Dictionary = getLibrary (actuator.target);
-			
-			if (overwrite) {
-				
-				for each (var childActuator:GenericActuator in library) {
-					
-					childActuator.stop (actuator.properties, false);
-					
-				}
-				
-			}
-			
-			actuator.addEventListener (Event.UNLOAD, Actuator_onUnload);
-			library[actuator] = actuator;
 			
 		}
 		
@@ -181,7 +147,7 @@
 				
 				for each (actuator in library) {
 					
-					actuator.stop (null, false);
+					actuator.MotionInternal::stop (null, false);
 					
 				}
 				
@@ -209,7 +175,7 @@
 					
 					for each (actuator in library) {
 						
-						actuator.resume ();
+						actuator.MotionInternal::resume ();
 						
 					}
 					
@@ -221,7 +187,7 @@
 					
 					for each (actuator in library) {
 						
-						actuator.resume ();
+						actuator.MotionInternal::resume ();
 						
 					}
 					
@@ -260,7 +226,7 @@
 				
 				for each (actuator in library) {
 					
-					actuator.stop (properties, true);
+					actuator.MotionInternal::stop (properties, true);
 					
 				}
 				
@@ -271,86 +237,109 @@
 		
 		/**
 		 * Creates a tween-based timer, which is useful for synchronizing function calls with other animations
-		 * @example		<code>Actuate.timer (1, { onComplete: trace, onCompleteParams: [ "Timer is now complete" ] } );</code>
+		 * @example		<code>Actuate.timer (1).onComplete (trace).onCompleteParams ("Timer is now complete");</code>
 		 * @param	duration		The length of the timer in seconds
-		 * @param	tweenProperties		Tween specific properties such as delay, onChange, onChangeParams, onComplete, onCompleteParams, changeListener or completeListener (Optional)
 		 * @param	customActuator		A custom actuator to use instead of the default (Optional)
-		 * @return		The generated target object, which you can use if you need to pause or resume your timer
+		 * @return		The current actuator instance, which can be used to apply properties like onComplete or to gain a reference to the target timer object
 		 */
-		public static function timer (duration:Number, tweenProperties:Object, customActuator:Class = null):Object {
+		public static function timer (duration:Number, customActuator:Class = null):GenericActuator {
 			
-			var target:Object = { progress: 0 };
-			var properties:Object = { progress: 1 };
+			return tween (new TweenTimer (0), duration, new TweenTimer (1), false, customActuator);
 			
-			tween (target, duration, properties, tweenProperties, customActuator);
+		}
+		
+		
+		/**
+		 * Creates a new ColorTransform tween
+		 * @param	target		The object to tween
+		 * @param	duration		The length of the tween in seconds
+		 * @param	color		The color to tint the target to (Default is 0x000000)
+		 * @param	amount		The degree of tinting that should be applied to the target (Default is 1)
+		 * @param	alpha		The end alpha value to tween the target to. This property is necessary to be able to tween the alpha and the tint of your target simultaneously (Default is 1) 
+		 * @param	overwrite		Sets whether previous tweens for the same target will be overwritten (Default is true)
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 */
+		public static function tint (target:Object, duration:Number, color:Number = 0x000000, amount:Number = 1, alpha:Number = 1, overwrite:Boolean = true):GenericActuator {
 			
-			return target;
+			return tween (target, duration, { color: color, amount: amount, alpha: alpha }, overwrite, ColorTransformActuator);
 			
 		}
 		
 		
 		/**
 		 * Creates a new tween
-		 * @example		<code>Actuate.tween (MyClip, 1, { alpha: 1 }, { onComplete: trace, onCompleteParams: [ "MyClip is now visible" ] }, SimpleActuator);</code>
+		 * @example		<code>Actuate.tween (MyClip, 1, { alpha: 1 } ).delay (1).onComplete (trace).onCompleteParams ("MyClip is now visible");</code>
 		 * @param	target		The object to tween
 		 * @param	duration		The length of the tween in seconds
 		 * @param	properties		The end values to tween the target to
-		 * @param	tweenProperties		Tween specific properties such as autoVisible, completeListener, delay, onComplete, onCompleteParams or snapping (Optional)
+		 * @param	overwrite			Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
 		 * @param	customActuator		A custom actuator to use instead of the default (Optional)
-		 */
-		public static function tween (target:Object, duration:Number, properties:Object, tweenProperties:Object = null, customActuator:Class = null):void {
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 */ 
+		public static function tween (target:Object, duration:Number, properties:Object, overwrite:Boolean = true, customActuator:Class = null):GenericActuator {
 			
 			if (target) {
 				
 				if (duration > 0) {
 					
 					var actuateClass:Class = customActuator || defaultActuator;
-					var actuator:GenericActuator = new actuateClass (target, duration, properties, tweenProperties);
+					var actuator:GenericActuator = new actuateClass (target, duration, properties);
 					
-					if (tweenProperties && "overwrite" in tweenProperties) {
+					var library:Dictionary = getLibrary (actuator.target);
+					
+					if (overwrite) {
 						
-						if (actuateClass.needsInitProperties) {
+						for each (var childActuator:GenericActuator in library) {
 							
-							actuator.initProperties = getInitProperties (target, properties, duration, tweenProperties);
+							childActuator.MotionInternal::stop (actuator.properties, false);
 							
 						}
 						
-						register (actuator, false);
-						
-					} else {
-						
-						register (actuator);
-						
 					}
 					
-					actuator.move ();
+					library[actuator] = actuator;
+					actuator.MotionInternal::move ();
+					
+					return actuator;
 					
 				} else {
 					
-					apply (target, properties, customActuator);
+					return apply (target, properties, customActuator);
 					
 				}
 				
 			}
 			
+			return null;
+			
 		}
 		
 		
-		
-		
-		// Event Handlers
-		
-		
-		
-		
-		private static function Actuator_onUnload (event:Event):void {
+		MotionInternal static function unload (actuator:GenericActuator):void {
 			
-			var actuator:GenericActuator = event.currentTarget as GenericActuator;
 			var library:Dictionary = getLibrary (actuator.target);
 			delete library[actuator];
 			
 		}
 		
+		
+	}
+	
+	
+}
+
+
+
+
+class TweenTimer {
+	
+	
+	public var progress:Number;
+	
+	
+	public function TweenTimer (progress:Number):void {
+		
+		this.progress = progress;
 		
 	}
 	

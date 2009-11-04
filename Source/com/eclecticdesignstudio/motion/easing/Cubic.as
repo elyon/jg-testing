@@ -68,8 +68,7 @@ final class CubicEaseInOut implements IEasing {
 	
 	public function calculate (k:Number):Number {
 		
-		if (k < 0.5) return 0.5 * k * k * k;
-		return 0.5 * ((k -= 2) * k * k + 2);
+		return ((k /= 1 / 2) < 1) ? 0.5 * k * k * k : 0.5 * ((k -= 2) * k * k + 2);
 		
 	}
 	

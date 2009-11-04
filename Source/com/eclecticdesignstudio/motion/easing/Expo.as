@@ -67,10 +67,12 @@ final class ExpoEaseInOut implements IEasing {
 	
 	public function calculate (k:Number):Number {
 		
-		if (k == 0) return 0;
-		if (k == 1) return 1;
-		if (k < 0.5) return 1 / 2 * Math.pow(2, 10 * (k - 1));
-		return 1 / 2 * (2 - Math.pow(2, -10 * --k));
+		if (k == 0) { return 0; }
+		if (k == 1) { return 1; }
+		if ((k /= 1 / 2.0) < 1.0) {
+			return 0.5 * Math.pow(2, 10 * (k - 1));
+		}
+		return 0.5 * (2 - Math.pow(2, -10 * --k));
 		
 	}
 	

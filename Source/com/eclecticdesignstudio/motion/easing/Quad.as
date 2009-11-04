@@ -68,8 +68,10 @@ final class QuadEaseInOut implements IEasing {
 	
 	public function calculate (k:Number):Number {
 		
-		if (k < 0.5) return 0.5 * k * k;
-		return -0.5 * (--k * (k - 2) - 1);
+		if ((k *= 2) < 1) {
+			return 1 / 2 * k * k;
+		}
+		return -1 / 2 * ((--k) * (k - 2) - 1);
 		
 	}
 	
