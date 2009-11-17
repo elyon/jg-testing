@@ -1,14 +1,15 @@
 ﻿package com.eclecticdesignstudio.motion {
 	
 	
-	import com.eclecticdesignstudio.motion.actuators.ColorTransformActuator;
-	import com.eclecticdesignstudio.motion.actuators.FilterActuator;
 	import com.eclecticdesignstudio.motion.actuators.GenericActuator;
+	import com.eclecticdesignstudio.motion.actuators.MethodActuator;
 	import com.eclecticdesignstudio.motion.actuators.MotionInternal;
 	import com.eclecticdesignstudio.motion.actuators.MotionPathActuator;
 	import com.eclecticdesignstudio.motion.actuators.SimpleActuator;
+	import com.eclecticdesignstudio.motion.actuators.TransformActuator;
 	import com.eclecticdesignstudio.motion.easing.Expo;
 	import com.eclecticdesignstudio.motion.easing.IEasing;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
@@ -18,7 +19,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.0
+	 * @version 1.1
 	 */
 	public class Actuate {
 		
@@ -51,18 +52,15 @@
 		
 		
 		/**
-		 * Creates a new BitmapFilter tween 
+		 * Creates a new effects tween 
 		 * @param	target		The object to tween
 		 * @param	duration		The length of the tween in seconds
-		 * @param	properties		The end values to tween the filter to
-		 * @param	index		The index of the filter within the target's filter array (Default is 0)
-		 * @param	overwrite		Sets whether previous tweens for the same target will be overwritten (Default is true)
-		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
+		 * @return		An EffectsOptions instance, which is used to select the kind of effect you would like to apply to the target
 		 */
-		public static function filter (target:Object, duration:Number, properties:Object, index:uint = 0, overwrite:Boolean = true):GenericActuator {
+		public static function effects (target:DisplayObject, duration:Number, overwrite:Boolean = true):EffectsOptions {
 			
-			properties.index = index;
-			return tween (target, duration, properties, overwrite, FilterActuator);
+			return new EffectsOptions (target, duration, overwrite);
 			
 		}
 		
@@ -88,7 +86,7 @@
 		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
 		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
 		 */
-		public static function path (target:Object, duration:Number, properties:Object, overwrite:Boolean = true):GenericActuator {
+		public static function motionPath (target:Object, duration:Number, properties:Object, overwrite:Boolean = true):GenericActuator {
 			
 			return tween (target, duration, properties, overwrite, MotionPathActuator);
 			
@@ -250,18 +248,15 @@
 		
 		
 		/**
-		 * Creates a new ColorTransform tween
+		 * Creates a new transform tween 
 		 * @param	target		The object to tween
 		 * @param	duration		The length of the tween in seconds
-		 * @param	color		The color to tint the target to (Default is 0x000000)
-		 * @param	amount		The degree of tinting that should be applied to the target (Default is 1)
-		 * @param	alpha		The end alpha value to tween the target to. This property is necessary to be able to tween the alpha and the tint of your target simultaneously (Default is 1) 
-		 * @param	overwrite		Sets whether previous tweens for the same target will be overwritten (Default is true)
-		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
+		 * @return		A TransformOptions instance, which is used to select the kind of transform you would like to apply to the target
 		 */
-		public static function tint (target:Object, duration:Number, color:Number = 0x000000, amount:Number = 1, alpha:Number = 1, overwrite:Boolean = true):GenericActuator {
+		public static function transform (target:DisplayObject, duration:Number, overwrite:Boolean = true):TransformOptions {
 			
-			return tween (target, duration, { color: color, amount: amount, alpha: alpha }, overwrite, ColorTransformActuator);
+			return new TransformOptions (target, duration, overwrite);
 			
 		}
 		
@@ -323,12 +318,142 @@
 		}
 		
 		
+		/**
+		 * Creates a new tween that updates a method rather than setting the properties of an object
+		 * @param	target		The method to update		
+		 * @param	duration		The length of the tween in seconds
+		 * @param	start		The starting parameters of the method call. You may use both numeric and non-numeric values
+		 * @param	end		The ending parameters of the method call. You may use both numeric and non-numeric values, but the signature should match the start parameters
+		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 */
+		public static function update (target:Function, duration:Number, start:Array, end:Array, overwrite:Boolean = true):GenericActuator {
+			
+			var properties:Object = { start: start, end: end };
+			
+			return tween (target, duration, properties, overwrite, MethodActuator);
+			
+		}
+		
+		
 	}
 	
 	
 }
 
 
+import com.eclecticdesignstudio.motion.actuators.FilterActuator;
+import com.eclecticdesignstudio.motion.actuators.GenericActuator;
+import com.eclecticdesignstudio.motion.actuators.TransformActuator;
+import com.eclecticdesignstudio.motion.Actuate;
+import flash.display.DisplayObject;
+import flash.filters.BitmapFilter;
+import flash.filters.ColorMatrixFilter;
+import flash.geom.Matrix;
+
+
+class EffectsOptions {
+	
+	
+	protected var duration:Number;
+	protected var overwrite:Boolean;
+	protected var target:DisplayObject;
+	
+	
+	public function EffectsOptions (target:DisplayObject, duration:Number, overwrite:Boolean) {
+		
+		this.target = target;
+		this.duration = duration;
+		this.overwrite = overwrite;
+		
+	}
+	
+	
+	/**
+	 * Creates a new BitmapFilter tween
+	 * @param	reference		A reference to the target's filter, which can be an array index or the class of the filter
+	 * @param	properties		The end properties to use for the tween
+	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+	 */
+	public function filter (reference:*, properties:Object):GenericActuator {
+		
+		properties.filter = reference;
+		
+		return Actuate.tween (target, duration, properties, overwrite, FilterActuator);
+		
+	}
+	
+	
+}
+
+
+class TransformOptions {
+	
+	
+	protected var duration:Number;
+	protected var overwrite:Boolean;
+	protected var target:DisplayObject;
+	
+	
+	public function TransformOptions (target:DisplayObject, duration:Number, overwrite:Boolean) {
+		
+		this.target = target;
+		this.duration = duration;
+		this.overwrite = overwrite;
+		
+	}
+	
+	
+	/**
+	 * Creates a new ColorTransform tween
+	 * @param	color		The color value
+	 * @param	strength		The percentage amount of tint to apply (Default is 1)
+	 * @param	alpha		The end alpha of the target. If you wish to tween alpha and tint simultaneously, you must do them both as part of the ColorTransform. A value of null will make no change to the alpha of the object (Default is null)
+	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+	 */
+	public function color (value:Number = 0x000000, strength:Number = 1, alpha:* = null):GenericActuator {
+		
+		var properties:Object = { colorValue: value, colorStrength: strength };
+		
+		if (alpha) {
+			
+			properties.colorAlpha = alpha;
+			
+		}
+		
+		return Actuate.tween (target, duration, properties, overwrite, TransformActuator);
+		
+	}
+	
+	
+	/**
+	 * Creates a new SoundTransform tween
+	 * @param	volume		The end volume for the target, or null if you would like to ignore this property (Default is null)
+	 * @param	pan		The end pan for the target, or null if you would like to ignore this property (Default is null)
+	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+	 */
+	public function sound (volume:* = null, pan:* = null):GenericActuator {
+		
+		var properties:Object = new Object ();
+		
+		if (volume) {
+			
+			properties.soundVolume = volume;
+			
+		}
+		
+		if (pan) {
+			
+			properties.soundPan = pan;
+			
+		}
+		
+		return Actuate.tween (target, duration, properties, overwrite, TransformActuator);
+		
+	}
+	
+	
+}
 
 
 class TweenTimer {

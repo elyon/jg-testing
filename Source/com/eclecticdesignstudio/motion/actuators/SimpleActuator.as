@@ -12,7 +12,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.0
+	 * @version 1.1
 	 */
 	public class SimpleActuator extends GenericActuator {
 		
@@ -28,7 +28,7 @@
 		protected var paused:Boolean;
 		protected var pauseTime:Number;
 		protected var propertyDetails:Array = new Array ();
-		protected var sendChange:Boolean;
+		protected var sendChange:Boolean = false;
 		protected var setVisible:Boolean;
 		protected var startTime:Number = getTimer () / 1000;
 		protected var toggleVisible:Boolean;
@@ -107,7 +107,7 @@
 			
 			toggleVisible = ("alpha" in properties && target is DisplayObject);
 			
-			if (toggleVisible && properties.alpha != 0) {
+			if (toggleVisible && !target.visible && properties.alpha != 0) {
 				
 				setVisible = true;
 				cacheVisible = target.visible;
@@ -190,7 +190,7 @@
 				
 				var details:PropertyDetails;
 				var easing:Number;
-				var i:int;
+				var i:uint;
 				
 				var tweenPosition:Number = elapsedTime / duration;
 				
@@ -296,7 +296,7 @@
 			
 			var actuator:SimpleActuator;
 			
-			for (var i:int = 0; i < actuators.length; i++) {
+			for (var i:uint = 0; i < actuators.length; i++) {
 				
 				actuator = actuators[i];
 				

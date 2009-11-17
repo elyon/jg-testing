@@ -10,7 +10,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.0
+	 * @version 1.1
 	 */
 	public class GenericActuator {
 		
@@ -18,9 +18,6 @@
 		MotionInternal var duration:Number;
 		MotionInternal var properties:Object;
 		MotionInternal var target:Object;
-		
-		protected var initDelay:Number;
-		protected var previousTarget:Object;
 		
 		MotionInternal var autoRotation:Boolean = false;
 		MotionInternal var autoVisible:Boolean = true;
@@ -31,8 +28,8 @@
 		MotionInternal var onComplete:Function;
 		MotionInternal var onCompleteParams:Array;
 		MotionInternal var reflect:Boolean = false;
-		MotionInternal var reverse:Boolean = false;
 		MotionInternal var repeat:int = 0;
+		MotionInternal var reverse:Boolean = false;
 		MotionInternal var snapping:Boolean = false;
 		
 		
@@ -99,13 +96,9 @@
 		
 		protected function complete (sendEvent:Boolean = true):void {
 			
-			if (sendEvent) {
+			if (sendEvent && MotionInternal::onComplete != null) {
 				
-				if (MotionInternal::onComplete != null) {
-					
-					MotionInternal::onComplete.apply (null, MotionInternal::onCompleteParams);
-					
-				}
+				MotionInternal::onComplete.apply (null, MotionInternal::onCompleteParams);
 				
 			}
 			

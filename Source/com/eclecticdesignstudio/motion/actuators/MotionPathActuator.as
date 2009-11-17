@@ -9,6 +9,7 @@
 	
 	/**
 	 * @author Joshua Granick
+	 * @version 1.1
 	 */
 	public class MotionPathActuator extends SimpleActuator {
 		
