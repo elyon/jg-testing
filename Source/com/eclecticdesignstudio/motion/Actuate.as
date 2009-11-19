@@ -407,7 +407,7 @@ class TransformOptions {
 	/**
 	 * Creates a new ColorTransform tween
 	 * @param	color		The color value
-	 * @param	strength		The percentage amount of tint to apply (Default is 1)
+	 * @param	strength		The amount of color to use. Values from 0 to 0.5 will alter hue. Values from 0.5 to 1 will add tinting. Animating from to 0 to 1 will look correct for most objects, but you may need to use values greater than 0.5 if you need to "force" color on your target (Default is 1)
 	 * @param	alpha		The end alpha of the target. If you wish to tween alpha and tint simultaneously, you must do them both as part of the ColorTransform. A value of null will make no change to the alpha of the object (Default is null)
 	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
 	 */
