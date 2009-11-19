@@ -415,7 +415,7 @@ class TransformOptions {
 		
 		var properties:Object = { colorValue: value, colorStrength: strength };
 		
-		if (alpha) {
+		if (alpha is Number) {
 			
 			properties.colorAlpha = alpha;
 			
@@ -436,13 +436,13 @@ class TransformOptions {
 		
 		var properties:Object = new Object ();
 		
-		if (volume) {
+		if (volume is Number) {
 			
 			properties.soundVolume = volume;
 			
 		}
 		
-		if (pan) {
+		if (pan is Number) {
 			
 			properties.soundPan = pan;
 			
