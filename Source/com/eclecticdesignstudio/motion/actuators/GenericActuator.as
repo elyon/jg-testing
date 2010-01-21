@@ -10,7 +10,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class GenericActuator {
 		
@@ -19,18 +19,19 @@
 		MotionInternal var properties:Object;
 		MotionInternal var target:Object;
 		
-		MotionInternal var autoRotation:Boolean = false;
 		MotionInternal var autoVisible:Boolean = true;
 		MotionInternal var delay:Number = 0;
 		MotionInternal var ease:IEasing;
-		MotionInternal var onChange:Function;
-		MotionInternal var onChangeParams:Array;
+		MotionInternal var onUpdate:Function;
+		MotionInternal var onUpdateParams:Array;
 		MotionInternal var onComplete:Function;
 		MotionInternal var onCompleteParams:Array;
 		MotionInternal var reflect:Boolean = false;
 		MotionInternal var repeat:int = 0;
 		MotionInternal var reverse:Boolean = false;
+		MotionInternal var smartRotation:Boolean = false;
 		MotionInternal var snapping:Boolean = false;
+		MotionInternal var special:Boolean = false;
 		
 		
 		public function GenericActuator (target:Object, duration:Number, properties:Object) {
@@ -56,20 +57,6 @@
 		
 		
 		/**
-		 * Enabling autoRotation can prevent unexpected results when tweening rotation values
-		 * @param	value		Whether autoRotation should be enabled (Default is true)
-		 * @return		The current actuator instance
-		 */
-		public function autoRotation (value:Boolean = true):GenericActuator {
-			
-			MotionInternal::autoRotation = value;
-			
-			return this;
-			
-		}
-		
-		
-		/**
 		 * Flash performs faster when objects are set to visible = false rather than only alpha = 0. autoVisible toggles automatically based on alpha values
 		 * @param	value		Whether autoVisible should be enabled (Default is true)
 		 * @return		The current actuator instance
@@ -85,9 +72,9 @@
 		
 		protected function change ():void {
 			
-			if (MotionInternal::onChange != null) {
+			if (MotionInternal::onUpdate != null) {
 				
-				MotionInternal::onChange.apply (null, MotionInternal::onChangeParams);
+				MotionInternal::onUpdate.apply (null, MotionInternal::onUpdateParams);
 				
 			}
 			
@@ -122,8 +109,8 @@
 		
 		
 		/**
-		 * Enabling autoRotation can prevent unexpected results when tweening rotation values
-		 * @param	value
+		 * Sets the easing which is used when running the tween
+		 * @param	easing		An easing equation, like Elastic.easeIn or Quad.easeOut
 		 * @return		The current actuator instance
 		 */
 		public function ease (easing:IEasing):GenericActuator {
@@ -148,10 +135,10 @@
 		 * @param	parameters		Parameters you would like to pass to the handler function when it is called
 		 * @return		The current actuator instance
 		 */
-		public function onChange (handler:Function, ... parameters:Array):GenericActuator {
+		public function onUpdate (handler:Function, ... parameters:Array):GenericActuator {
 			
-			MotionInternal::onChange = handler;
-			MotionInternal::onChangeParams = parameters;
+			MotionInternal::onUpdate = handler;
+			MotionInternal::onUpdateParams = parameters;
 			
 			return this;
 			
@@ -224,6 +211,22 @@
 		public function reverse (value:Boolean = true):GenericActuator {
 			
 			MotionInternal::reverse = value;
+			special = true;
+			
+			return this;
+			
+		}
+		
+		
+		/**
+		 * Enabling smartRotation can prevent undesired results when tweening rotation values
+		 * @param	value		Whether smart rotation should be enabled (Default is true)
+		 * @return		The current actuator instance
+		 */
+		public function smartRotation (value:Boolean = true):GenericActuator {
+			
+			MotionInternal::smartRotation = value;
+			special = true;
 			
 			return this;
 			
@@ -238,6 +241,7 @@
 		public function snapping (value:Boolean = true):GenericActuator {
 			
 			MotionInternal::snapping = value;
+			special = true;
 			
 			return this;
 			

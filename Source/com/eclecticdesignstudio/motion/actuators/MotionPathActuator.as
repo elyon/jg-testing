@@ -9,7 +9,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class MotionPathActuator extends SimpleActuator {
 		
@@ -51,20 +51,21 @@
 				
 			}
 			
+			detailsLength = propertyDetails.length;
 			initialized = true;
 			
 		}
 		
 		
-		MotionInternal override function update (elapsedTime:Number):void {
+		MotionInternal override function update (currentTime:Number):void {
 			
 			if (!paused) {
 				
 				var details:PropertyPathDetails;
 				var easing:Number;
-				var i:int;
+				var i:uint;
 				
-				var tweenPosition:Number = elapsedTime / duration;
+				var tweenPosition:Number = (currentTime - timeOffset) / duration;
 				
 				if (tweenPosition > 1) {
 					
@@ -78,19 +79,11 @@
 					
 				}
 				
-				if (!MotionInternal::reverse) {
+				if (!MotionInternal::special) {
 					
 					easing = MotionInternal::ease.calculate (tweenPosition);
 					
-				} else {
-					
-					easing = MotionInternal::ease.calculate (1 - tweenPosition);
-					
-				}
-				
-				if (!MotionInternal::snapping) {
-					
-					for (i = 0; i < propertyDetails.length; i++) {
+					for (i = 0; i < detailsLength; ++i) {
 						
 						details = propertyDetails[i];
 						details.target[details.propertyName] = details.path.MotionInternal::calculate (easing);
@@ -99,10 +92,31 @@
 					
 				} else {
 					
-					for (i = 0; i < propertyDetails.length; i++) {
+					if (!MotionInternal::reverse) {
+						
+						easing = MotionInternal::ease.calculate (tweenPosition);
+						
+					} else {
+						
+						easing = MotionInternal::ease.calculate (1 - tweenPosition);
+						
+					}
+					
+					var endValue:Number;
+					
+					for (i = 0; i < detailsLength; ++i) {
 						
 						details = propertyDetails[i];
-						details.target[details.propertyName] = Math.round (details.path.MotionInternal::calculate (easing));
+						
+						if (!MotionInternal::snapping) {
+							
+							details.target[details.propertyName] = details.path.MotionInternal::calculate (easing);
+							
+						} else {
+							
+							details.target[details.propertyName] = Math.round (details.path.MotionInternal::calculate (easing));
+							
+						}
 						
 					}
 					
@@ -131,7 +145,7 @@
 							
 						}
 						
-						startTime = getTimer () / 1000;
+						startTime = currentTime;
 						timeOffset = startTime + MotionInternal::delay;
 						
 						if (MotionInternal::repeat > 0) {

@@ -14,7 +14,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class TransformActuator extends SimpleActuator {
 		
@@ -65,6 +65,7 @@
 				
 			}
 			
+			detailsLength = propertyDetails.length;
 			initialized = true;
 			
 		}
@@ -161,16 +162,9 @@
 		}
 		
 		
-		MotionInternal override function move ():void {
+		MotionInternal override function update (currentTime:Number):void {
 			
-			super.MotionInternal::move ();
-			
-		}
-		
-		
-		MotionInternal override function update (elapsedTime:Number):void {
-			
-			super.MotionInternal::update (elapsedTime);
+			super.MotionInternal::update (currentTime);
 			
 			target.transform.colorTransform = tweenColorTransform;
 			

@@ -19,7 +19,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class Actuate {
 		
@@ -35,7 +35,7 @@
 		 * @param	target		The object to copy to
 		 * @param	properties		The object to copy from
 		 * @param	customActuator		A custom actuator to use instead of the default (Optional)
-		 * @return		The current actuator instance, which can be used to apply properties like onComplete or onChange handlers
+		 * @return		The current actuator instance, which can be used to apply properties like onComplete or onUpdate handlers
 		 */
 		public static function apply (target:Object, properties:Object, customActuator:Class = null):GenericActuator {
 			
@@ -84,7 +84,7 @@
 		 * @param	duration		The length of the tween in seconds
 		 * @param	properties		An object containing a motion path for each property you wish to tween
 		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
-		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onUpdate
 		 */
 		public static function motionPath (target:Object, duration:Number, properties:Object, overwrite:Boolean = true):GenericActuator {
 			
@@ -254,7 +254,7 @@
 		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
 		 * @return		A TransformOptions instance, which is used to select the kind of transform you would like to apply to the target
 		 */
-		public static function transform (target:DisplayObject, duration:Number, overwrite:Boolean = true):TransformOptions {
+		public static function transform (target:DisplayObject, duration:Number = 0, overwrite:Boolean = true):TransformOptions {
 			
 			return new TransformOptions (target, duration, overwrite);
 			
@@ -269,7 +269,7 @@
 		 * @param	properties		The end values to tween the target to
 		 * @param	overwrite			Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
 		 * @param	customActuator		A custom actuator to use instead of the default (Optional)
-		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onUpdate
 		 */ 
 		public static function tween (target:Object, duration:Number, properties:Object, overwrite:Boolean = true, customActuator:Class = null):GenericActuator {
 			
@@ -325,9 +325,9 @@
 		 * @param	start		The starting parameters of the method call. You may use both numeric and non-numeric values
 		 * @param	end		The ending parameters of the method call. You may use both numeric and non-numeric values, but the signature should match the start parameters
 		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
-		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+		 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onUpdate
 		 */
-		public static function update (target:Function, duration:Number, start:Array, end:Array, overwrite:Boolean = true):GenericActuator {
+		public static function update (target:Function, duration:Number, start:Array = null, end:Array = null, overwrite:Boolean = true):GenericActuator {
 			
 			var properties:Object = { start: start, end: end };
 			
@@ -373,7 +373,7 @@ class EffectsOptions {
 	 * Creates a new BitmapFilter tween
 	 * @param	reference		A reference to the target's filter, which can be an array index or the class of the filter
 	 * @param	properties		The end properties to use for the tween
-	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onUpdate
 	 */
 	public function filter (reference:*, properties:Object):GenericActuator {
 		
@@ -407,9 +407,9 @@ class TransformOptions {
 	/**
 	 * Creates a new ColorTransform tween
 	 * @param	color		The color value
-	 * @param	strength		The amount of color to use. Values from 0 to 0.5 will alter hue. Values from 0.5 to 1 will add tinting. Animating from to 0 to 1 will look correct for most objects, but you may need to use values greater than 0.5 if you need to "force" color on your target (Default is 1)
+	 * @param	strength		The percentage amount of tint to apply (Default is 1)
 	 * @param	alpha		The end alpha of the target. If you wish to tween alpha and tint simultaneously, you must do them both as part of the ColorTransform. A value of null will make no change to the alpha of the object (Default is null)
-	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onUpdate
 	 */
 	public function color (value:Number = 0x000000, strength:Number = 1, alpha:* = null):GenericActuator {
 		
@@ -430,7 +430,7 @@ class TransformOptions {
 	 * Creates a new SoundTransform tween
 	 * @param	volume		The end volume for the target, or null if you would like to ignore this property (Default is null)
 	 * @param	pan		The end pan for the target, or null if you would like to ignore this property (Default is null)
-	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onChange
+	 * @return		The current actuator instance, which can be used to apply properties like ease, delay, onComplete or onUpdate
 	 */
 	public function sound (volume:* = null, pan:* = null):GenericActuator {
 		

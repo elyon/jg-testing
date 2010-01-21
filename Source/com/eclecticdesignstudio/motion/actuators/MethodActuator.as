@@ -8,7 +8,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class MethodActuator extends SimpleActuator {
 		
@@ -19,6 +19,18 @@
 		public function MethodActuator (target:Object, duration:Number, properties:Object) {
 			
 			super (target, duration, properties);
+			
+			if (!properties.start) {
+				
+				properties.start = new Array ();
+				
+			}
+			
+			if (!properties.end) {
+				
+				properties.end = properties.start;
+				
+			}
 			
 		}
 		
@@ -45,14 +57,15 @@
 				
 			}
 			
+			detailsLength = propertyDetails.length;
 			initialized = true;
 			
 		}
 		
 		
-		MotionInternal override function update (elapsedTime:Number):void {
+		MotionInternal override function update (currentTime:Number):void {
 			
-			super.update (elapsedTime);
+			super.update (currentTime);
 			
 			var parameters:Array = new Array ();
 			

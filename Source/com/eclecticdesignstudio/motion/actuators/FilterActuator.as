@@ -9,7 +9,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class FilterActuator extends SimpleActuator {
 		
@@ -83,14 +83,15 @@
 				
 			}
 			
+			detailsLength = propertyDetails.length;
 			initialized = true;
 			
 		}
 		
 		
-		MotionInternal override function update (elapsedTime:Number):void {
+		MotionInternal override function update (currentTime:Number):void {
 			
-			super.update (elapsedTime);
+			super.update (currentTime);
 			
 			var filters:Array = (target as DisplayObject).filters;
 			

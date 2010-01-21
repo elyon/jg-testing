@@ -12,7 +12,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.1
+	 * @version 1.2
 	 */
 	public class SimpleActuator extends GenericActuator {
 		
@@ -20,10 +20,12 @@
 		MotionInternal var timeOffset:Number;
 		
 		protected static var actuators:Array = new Array ();
+		protected static var actuatorsLength:uint = 0;
 		protected static var shape:Shape;
 		
 		protected var active:Boolean = true;
 		protected var cacheVisible:Boolean;
+		protected var detailsLength:uint;
 		protected var initialized:Boolean;
 		protected var paused:Boolean;
 		protected var pauseTime:Number;
@@ -98,6 +100,7 @@
 				
 			}
 			
+			detailsLength = propertyDetails.length;
 			initialized = true;
 			
 		}
@@ -117,6 +120,7 @@
 			
 			timeOffset = startTime;
 			actuators.push (this);
+			++actuatorsLength;
 			
 		}
 		
@@ -124,10 +128,10 @@
 		/**
 		 * @inheritDoc
 		 */
-		public override function onChange (handler:Function, ... parameters:Array):GenericActuator {
+		public override function onUpdate (handler:Function, ... parameters:Array):GenericActuator {
 			
-			MotionInternal::onChange = handler;
-			MotionInternal::onChangeParams = parameters;
+			MotionInternal::onUpdate = handler;
+			MotionInternal::onUpdateParams = parameters;
 			sendChange = true;
 			
 			return this;
@@ -184,7 +188,7 @@
 		}
 		
 		
-		MotionInternal function update (elapsedTime:Number):void {
+		MotionInternal function update (currentTime:Number):void {
 			
 			if (!paused) {
 				
@@ -192,7 +196,7 @@
 				var easing:Number;
 				var i:uint;
 				
-				var tweenPosition:Number = elapsedTime / duration;
+				var tweenPosition:Number = (currentTime - timeOffset) / duration;
 				
 				if (tweenPosition > 1) {
 					
@@ -206,19 +210,11 @@
 					
 				}
 				
-				if (!MotionInternal::reverse) {
+				if (!MotionInternal::special) {
 					
 					easing = MotionInternal::ease.calculate (tweenPosition);
 					
-				} else {
-					
-					easing = MotionInternal::ease.calculate (1 - tweenPosition);
-					
-				}
-				
-				if (!MotionInternal::snapping) {
-					
-					for (i = 0; i < propertyDetails.length; i++) {
+					for (i = 0; i < detailsLength; ++i) {
 						
 						details = propertyDetails[i];
 						details.target[details.propertyName] = details.start + (details.change * easing);
@@ -227,10 +223,53 @@
 					
 				} else {
 					
-					for (i = 0; i < propertyDetails.length; i++) {
+					if (!MotionInternal::reverse) {
+						
+						easing = MotionInternal::ease.calculate (tweenPosition);
+						
+					} else {
+						
+						easing = MotionInternal::ease.calculate (1 - tweenPosition);
+						
+					}
+					
+					var endValue:Number;
+					
+					for (i = 0; i < detailsLength; ++i) {
 						
 						details = propertyDetails[i];
-						details.target[details.propertyName] = Math.round (details.start + (details.change * easing));
+						
+						if (MotionInternal::smartRotation && (details.propertyName == "rotation" || details.propertyName == "rotationX" || details.propertyName == "rotationY" || details.propertyName == "rotationZ")) {
+							
+							var rotation:Number = details.change % 360;
+							
+							if (rotation > 180) {
+								
+								rotation -= 360;
+								
+							} else if (rotation < -180) {
+								
+								rotation += 360;
+								
+							}
+							
+							endValue = details.start + rotation * easing;
+							
+						} else {
+							
+							endValue = details.start + (details.change * easing);
+							
+						}
+						
+						if (!MotionInternal::snapping) {
+							
+							details.target[details.propertyName] = endValue;
+							
+						} else {
+							
+							details.target[details.propertyName] = Math.round (endValue);
+							
+						}
 						
 					}
 					
@@ -259,7 +298,7 @@
 							
 						}
 						
-						startTime = getTimer () / 1000;
+						startTime = currentTime;
 						timeOffset = startTime + MotionInternal::delay;
 						
 						if (MotionInternal::repeat > 0) {
@@ -296,7 +335,7 @@
 			
 			var actuator:SimpleActuator;
 			
-			for (var i:uint = 0; i < actuators.length; i++) {
+			for (var i:uint = 0; i < actuatorsLength; i++) {
 				
 				actuator = actuators[i];
 				
@@ -304,13 +343,14 @@
 					
 					if (currentTime > actuator.timeOffset) {
 						
-						actuator.MotionInternal::update (currentTime - actuator.timeOffset);
+						actuator.MotionInternal::update (currentTime);
 						
 					}
 					
 				} else {
 					
 					actuators.splice (i, 1);
+					--actuatorsLength;
 					i --;
 					
 				}
