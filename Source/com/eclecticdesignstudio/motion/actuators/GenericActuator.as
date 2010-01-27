@@ -176,6 +176,7 @@
 		public function reflect (value:Boolean = true):GenericActuator {
 			
 			MotionInternal::reflect = true;
+			MotionInternal::special = true;
 			
 			return this;
 			
