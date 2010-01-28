@@ -249,7 +249,7 @@
 		}
 		
 		
-		MotionInternal function stop (properties:Object, sendEvent:Boolean):void {
+		MotionInternal function stop (properties:Object, complete:Boolean, sendEvent:Boolean):void {
 			
 			
 			

@@ -159,7 +159,7 @@
 		}
 		
 		
-		MotionInternal override function stop (properties:Object, sendEvent:Boolean):void {
+		MotionInternal override function stop (properties:Object, complete:Boolean, sendEvent:Boolean):void {
 			
 			if (active) {
 				
@@ -168,7 +168,14 @@
 					if (propertyName in this.properties) {
 						
 						active = false;
-						complete (sendEvent);
+						
+						if (complete) {
+							
+							apply ();
+							
+						}
+						
+						this.complete (sendEvent);
 						return;
 						
 					}
@@ -178,7 +185,14 @@
 				if (!properties) {
 					
 					active = false;
-					complete (sendEvent);
+					
+					if (complete) {
+						
+						apply ();
+						
+					}
+					
+					this.complete (sendEvent);
 					return;
 					
 				}

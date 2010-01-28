@@ -19,7 +19,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.2
+	 * @version 1.21
 	 */
 	public class Actuate {
 		
@@ -145,7 +145,7 @@
 				
 				for each (actuator in library) {
 					
-					actuator.MotionInternal::stop (null, false);
+					actuator.MotionInternal::stop (null, false, false);
 					
 				}
 				
@@ -200,31 +200,40 @@
 		 * Stops all tweens for an individual object
 		 * @param	target		The target object which will have its tweens stopped
 		 * @param  properties		An array or an object which contains the properties you wish to stop, like [ "alpha" ] or { alpha: null }. Passing no value removes all tweens for the object (Optional)
+		 * @param	complete		If tweens should apply their final target values before stopping. Default is false (Optional) 
 		 */
-		public static function stop (target:Object, properties:Object = null):void {
+		public static function stop (target:Object, properties:Object = null, complete:Boolean = false):void {
 			
 			if (target) {
 				
 				var actuator:GenericActuator;
 				var library:Dictionary = getLibrary (target);
 				
-				if (properties is Array) {
+				var temp:Object;
+				
+				if (properties is String) {
 					
-					var newProperties:Object = new Object ();
+					temp = new Object ();
+					temp[properties] = null;
+					properties = temp;
+					
+				} else if (properties is Array) {
+					
+					temp = new Object ();
 					
 					for each (var propertyName:String in properties) {
 						
-						newProperties[propertyName] = null;
+						temp[propertyName] = null;
 						
 					}
 					
-					properties = newProperties;
+					properties = temp;
 					
 				}
 				
 				for each (actuator in library) {
 					
-					actuator.MotionInternal::stop (properties, true);
+					actuator.MotionInternal::stop (properties, complete, true);
 					
 				}
 				
@@ -286,7 +295,7 @@
 						
 						for each (var childActuator:GenericActuator in library) {
 							
-							childActuator.MotionInternal::stop (actuator.properties, false);
+							childActuator.MotionInternal::stop (actuator.properties, false, false);
 							
 						}
 						

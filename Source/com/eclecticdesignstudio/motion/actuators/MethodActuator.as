@@ -35,6 +35,13 @@
 		}
 		
 		
+		MotionInternal override function apply ():void {
+			
+			(target as Function).apply (null, properties.end);
+			
+		}
+		
+		
 		protected override function initialize ():void {
 			
 			var details:PropertyDetails;
