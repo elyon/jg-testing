@@ -19,7 +19,7 @@
 	
 	/**
 	 * @author Joshua Granick
-	 * @version 1.21
+	 * @version 1.22
 	 */
 	public class Actuate {
 		
@@ -199,7 +199,7 @@
 		/**
 		 * Stops all tweens for an individual object
 		 * @param	target		The target object which will have its tweens stopped
-		 * @param  properties		An array or an object which contains the properties you wish to stop, like [ "alpha" ] or { alpha: null }. Passing no value removes all tweens for the object (Optional)
+		 * @param  properties		A string, array or object which contains the properties you wish to stop, like "alpha", [ "x", "y" ] or { alpha: null }. Passing no value removes all tweens for the object (Optional)
 		 * @param	complete		If tweens should apply their final target values before stopping. Default is false (Optional) 
 		 */
 		public static function stop (target:Object, properties:Object = null, complete:Boolean = false):void {
@@ -244,7 +244,7 @@
 		
 		/**
 		 * Creates a tween-based timer, which is useful for synchronizing function calls with other animations
-		 * @example		<code>Actuate.timer (1).onComplete (trace).onCompleteParams ("Timer is now complete");</code>
+		 * @example		<code>Actuate.timer (1).onComplete (trace, "Timer is now complete");</code>
 		 * @param	duration		The length of the timer in seconds
 		 * @param	customActuator		A custom actuator to use instead of the default (Optional)
 		 * @return		The current actuator instance, which can be used to apply properties like onComplete or to gain a reference to the target timer object
@@ -257,13 +257,14 @@
 		
 		
 		/**
-		 * Creates a new transform tween 
+		 * Creates a new transform tween
+		 * @example		<code>Actuate.transform (MyClip, 1).color (0xFF0000);</code>
 		 * @param	target		The object to tween
 		 * @param	duration		The length of the tween in seconds
 		 * @param	overwrite		Sets whether previous tweens for the same target and properties will be overwritten (Default is true)
 		 * @return		A TransformOptions instance, which is used to select the kind of transform you would like to apply to the target
 		 */
-		public static function transform (target:DisplayObject, duration:Number = 0, overwrite:Boolean = true):TransformOptions {
+		public static function transform (target:Object, duration:Number = 0, overwrite:Boolean = true):TransformOptions {
 			
 			return new TransformOptions (target, duration, overwrite);
 			
@@ -272,7 +273,7 @@
 		
 		/**
 		 * Creates a new tween
-		 * @example		<code>Actuate.tween (MyClip, 1, { alpha: 1 } ).delay (1).onComplete (trace).onCompleteParams ("MyClip is now visible");</code>
+		 * @example		<code>Actuate.tween (MyClip, 1, { alpha: 1 } ).onComplete (trace, "MyClip is now visible");</code>
 		 * @param	target		The object to tween
 		 * @param	duration		The length of the tween in seconds
 		 * @param	properties		The end values to tween the target to
@@ -329,6 +330,7 @@
 		
 		/**
 		 * Creates a new tween that updates a method rather than setting the properties of an object
+		 * @example		<code>Actuate.update (trace, 1, ["Value: ", 0], ["", 1]).onComplete (trace, "Finished tracing values between 0 and 1");</code>
 		 * @param	target		The method to update		
 		 * @param	duration		The length of the tween in seconds
 		 * @param	start		The starting parameters of the method call. You may use both numeric and non-numeric values
@@ -401,10 +403,10 @@ class TransformOptions {
 	
 	protected var duration:Number;
 	protected var overwrite:Boolean;
-	protected var target:DisplayObject;
+	protected var target:Object;
 	
 	
-	public function TransformOptions (target:DisplayObject, duration:Number, overwrite:Boolean) {
+	public function TransformOptions (target:Object, duration:Number, overwrite:Boolean) {
 		
 		this.target = target;
 		this.duration = duration;

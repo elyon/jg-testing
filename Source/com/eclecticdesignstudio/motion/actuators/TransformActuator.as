@@ -53,7 +53,7 @@
 		
 		protected override function initialize ():void {
 			
-			if ("colorValue" in properties) {
+			if ("colorValue" in properties && target is DisplayObject) {
 				
 				initializeColor ();
 				
@@ -118,11 +118,11 @@
 				
 			} else {
 				
-				endColorTransform.alphaMultiplier = (target as DisplayObject).alpha;
+				endColorTransform.alphaMultiplier = target.alpha;
 				
 			}
 			
-			var begin:ColorTransform = (target as DisplayObject).transform.colorTransform;
+			var begin:ColorTransform = target.transform.colorTransform;
 			tweenColorTransform = new ColorTransform ();
 			
 			var details:PropertyDetails;
@@ -141,8 +141,8 @@
 		
 		protected function initializeSound ():void {
 			
-			var start:SoundTransform = (target as Sprite).soundTransform;
-			endSoundTransform = (target as Sprite).soundTransform;
+			var start:SoundTransform = target.soundTransform;
+			endSoundTransform = target.soundTransform;
 			tweenSoundTransform = new SoundTransform ();
 			
 			if ("soundVolume" in properties) {
@@ -166,7 +166,17 @@
 			
 			super.MotionInternal::update (currentTime);
 			
-			target.transform.colorTransform = tweenColorTransform;
+			if (endColorTransform) {
+				
+				target.transform.colorTransform = tweenColorTransform;
+				
+			}
+			
+			if (endSoundTransform) {
+				
+				target.soundTransform = tweenSoundTransform;
+				
+			}
 			
 		}
 		
